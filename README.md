@@ -1,1 +1,1 @@
-# Carpeta de LPOO
+# Clase 1
