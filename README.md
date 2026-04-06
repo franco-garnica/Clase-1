@@ -1,1 +1,1 @@
-# Clase-1
+# carpeta de LPOO
