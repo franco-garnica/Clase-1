@@ -3,5 +3,9 @@ void setup() {
 }
 
 void draw() {
-  rect(width/4, height/4, width/2, height/2);
+if (mousePressed) {
+  line(mouseX, mouseY, pmouseX, pmouseY);
+  line(width-mouseX, mouseY,width-pmouseX, pmouseY);
+}
+
 }
