@@ -36,14 +36,9 @@ void draw() {
   background(255);
 
   for (int i = 0; i < filas; i++) {
-    for (int j = 0; j < columnas; j++) {
-
-      float offset = 0;
-      if (i % 2 != 0) {
-        offset = anchoLadrillo / 2;
-      }
-      float x = j * anchoLadrillo + offset;
-      float y = i * altoLadrillo;
+int inicio = (i % 2 == 0) ? 0 : anchoLadrillo / 2;
+for (int x = inicio; x < width; x += anchoLadrillo) {
+      int y = i * altoLadrillo;
       stroke(0);
       rect(x, y, anchoLadrillo, altoLadrillo);
     }
