@@ -1,0 +1,51 @@
+1- Tablero Ajedrez
+
+int filas = 8;
+int columnas = 8;
+int tam = 60; 
+
+void setup() {
+  size(1200, 1000);
+}
+void draw() {
+  background(255);
+for (int i = 0; i < filas; i++) {
+    for (int j = 0; j < columnas; j++) {
+ if ((i + j) % 2 == 0) {
+        fill(255); 
+      } else {
+        fill(0); 
+      }
+rect(j * tam, i * tam, tam, tam);
+    }
+  }
+}
+
+2- Pared de ladrillo
+
+int filas = 8;
+int columnas = 8;
+int anchoLadrillo = 60;
+int altoLadrillo = 30;
+
+void setup() {
+  size(600, 400);
+}
+
+void draw() {
+  background(255);
+
+  for (int i = 0; i < filas; i++) {
+    for (int j = 0; j < columnas; j++) {
+
+      float offset = 0;
+      if (i % 2 != 0) {
+        offset = anchoLadrillo / 2;
+      }
+      float x = j * anchoLadrillo + offset;
+      float y = i * altoLadrillo;
+      stroke(0);
+      rect(x, y, anchoLadrillo, altoLadrillo);
+    }
+  }
+}
