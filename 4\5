@@ -21,7 +21,11 @@ void mousePressed() {
   posX[indice] = mouseX;
   posY[indice] = mouseY;
 
-  indice = (indice + 1) % maxPuntos;
+  indice++;
+
+  if (indice == maxPuntos) {
+    indice = 0;
+  }
 
   if (cantidad < maxPuntos) {
     cantidad++;
