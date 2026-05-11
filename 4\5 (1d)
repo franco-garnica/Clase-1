@@ -1,0 +1,88 @@
+Ejercicio 1:
+
+
+int cantidad = 10;
+float[] alturas = new float[cantidad];
+float anchoBarra;
+
+void setup() {
+  size(800, 400);
+  anchoBarra = width / cantidad;
+  
+  for (int i = 0; i < cantidad; i++) {
+    alturas[i] = height / 2;
+  }
+}
+
+void draw() {
+  background(30);
+  
+  for (int i = 0; i < cantidad; i++) {
+    float x = i * anchoBarra;
+    float h = alturas[i];
+    
+    fill(100, 200, 255);
+    rect(x, height - h, anchoBarra - 5, h);
+  }
+}
+
+void mouseDragged() {
+  int indice = int(mouseX / anchoBarra);
+  
+  if (indice >= 0 && indice < cantidad) {
+    float nuevaAltura = height - mouseY;
+    nuevaAltura = constrain(nuevaAltura, 0, height);
+    alturas[indice] = nuevaAltura;
+  }
+}
+
+Ejercicio 2:
+
+int filas = 10;
+int columnas = 10;
+int tam = 50;
+
+boolean[][][] laberinto = new boolean[filas][columnas][6];
+
+void setup() {
+  size(columnas * tam, filas * tam);
+  
+  for (int f = 0; f < filas; f++) {
+    for (int c = 0; c < columnas; c++) {
+      for (int l = 0; l < 6; l++) {
+        laberinto[f][c][l] = random(1) > 0.5;
+      }
+    }
+  }
+}
+
+void draw() {
+  background(255);
+  stroke(0);
+  
+  for (int f = 0; f < filas; f++) {
+    for (int c = 0; c < columnas; c++) {
+      
+      float x = c * tam;
+      float y = f * tam;
+      
+      if (laberinto[f][c][0])
+        line(x, y, x + tam, y);
+        
+      if (laberinto[f][c][1])
+        line(x + tam, y, x + tam, y + tam);
+        
+      if (laberinto[f][c][2])
+        line(x, y + tam, x + tam, y + tam);
+        
+      if (laberinto[f][c][3])
+        line(x, y, x, y + tam);
+        
+      if (laberinto[f][c][4])
+        line(x, y, x + tam, y + tam);
+        
+      if (laberinto[f][c][5])
+        line(x + tam, y, x, y + tam);
+    }
+  }
+}
