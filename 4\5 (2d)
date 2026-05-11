@@ -1,0 +1,36 @@
+int filas = 20;
+int columnas = 20;
+int tam = 30;
+
+float[][] matriz = new float[filas][columnas];
+
+void setup() {
+  size(columnas * tam, filas * tam);
+}
+
+void draw() {
+  background(0);
+  
+  float distanciaMax = dist(0, 0, width, height);
+  
+  for (int f = 0; f < filas; f++) {
+    for (int c = 0; c < columnas; c++) {
+      
+      float x = c * tam;
+      float y = f * tam;
+      
+      float centroX = x + tam/2;
+      float centroY = y + tam/2;
+      
+      float d = dist(centroX, centroY, mouseX, mouseY);
+      
+      matriz[f][c] = d;
+      
+      float gris = map(d, 0, distanciaMax, 255, 0);
+      
+      fill(gris);
+      noStroke();
+      rect(x, y, tam, tam);
+    }
+  }
+}
