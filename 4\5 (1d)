@@ -30,10 +30,8 @@ void mouseDragged() {
   int indice = int(mouseX / anchoBarra);
   
   if (indice >= 0 && indice < cantidad) {
-    float nuevaAltura = height - mouseY;
-    nuevaAltura = constrain(nuevaAltura, 0, height);
-    alturas[indice] = nuevaAltura;
-  }
+  alturas[indice] = constrain(height - mouseY, 0, height);
+}
 }
 
 Ejercicio 2:
