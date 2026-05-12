@@ -25,3 +25,51 @@ if(pos.y < 0){
 fill(255,0,0);
 
 }
+
+
+Con cambio de color:
+PVector pos, vel;
+float r = 255, g = 0, b = 0;
+
+void setup (){
+size (800,600);
+
+pos = new PVector(width/2, height/2);
+vel = new PVector(2,-1);
+
+  cambiarColor();
+}
+
+void draw(){
+ println (pos.x, pos.y);
+ pos.add(vel);
+ fill(r, g, b);
+rect(pos.x, pos.y,100,100);
+
+if(pos.x + 100 > width){
+vel.x *= -1;
+cambiarColor();
+}
+
+if(pos.x < 0){
+  vel.x *= -1;
+  cambiarColor();
+}
+
+if(pos.y + 100 > height){
+vel.y *= -1;  
+  cambiarColor();
+}
+
+if(pos.y < 0){
+  vel.y *= -1;
+    cambiarColor();
+}
+}
+void cambiarColor() {
+  r = random(255);
+  g = random(255);
+  b = random(255);
+}
+
+
