@@ -1,0 +1,29 @@
+PVector pos, vel;
+float largo = 100;
+
+void setup() {
+  size(800, 600);
+  pos = new PVector(width/2, height/2);
+  vel = new PVector(2, -1);
+}
+
+void draw() {
+
+  println(vel.mag());
+                                 
+  line(pos.x, pos.y, pos.x + largo, pos.y);
+
+  pos.add(vel);
+
+  if (pos.x > width) {
+    pos.x = -largo;
+  } else if (pos.x < -largo) {
+    pos.x = width;
+  }
+
+  if (pos.y > height) {
+    pos.y = 0;
+  } else if (pos.y < 0) {
+    pos.y = height;
+  }
+}
