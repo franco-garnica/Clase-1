@@ -1,0 +1,102 @@
+Pelota p;
+Paleta j1, j2;
+
+void setup() {
+  size(800, 600);
+  p = new Pelota();
+  j1 = new Paleta(width*0.1);
+  j2 = new Paleta(width*0.9);
+}
+
+void draw() {
+  p.rebotar();
+  p.mover();
+  background(0);
+  p.mostrar();
+  j1.mostrar();
+  j2.mostrar();
+  if (is_w) j1.moverUP();
+  if (is_s) j1.moverDown();
+}
+
+
+clase:
+class Pelota {
+  PVector pos;
+  PVector vel;
+  float r = 10.0;
+  color c = color(255);
+  Pelota() {
+    pos = new PVector(width/2, height/2);
+    vel = new PVector(20, 20);
+  }
+
+  void mover() {
+    pos.add(vel);
+  }
+  void mostrar() {
+    circle(pos.x, pos.y, r);
+  }
+  void rebotar() {
+    if (pos.y > height - r || pos.y < 0)
+    {
+      vel.y = vel.y * -1;
+    }
+    if (pos.x > width - r || pos.x < 0)
+    {
+      vel.x = vel.x * -1;
+    }
+  }
+}
+
+keys:
+boolean is_up = false;
+boolean is_rigth = false;
+boolean is_down = false;
+boolean is_left = false;
+
+void keyPressed() {
+  if ( key == 'w' || key == 'W') is_w = true;
+if ( key == 'a' || key == 'A') is_w = true;
+if ( key == 's' || key == 'S') is_w = true;
+if ( key == 'd' || key == 'D') is_w = true;
+
+  if (keyCode == UP) is_up = true;
+  if (keyCode == RIGHT) is_rigth = true;
+  if (keyCode == DOWN) is_left = true;
+  if (keyCode == LEFT) is_down = true;
+}
+
+void keyReleased() {
+  if ( key == 'w' || key == 'W') is_w = true;
+if ( key == 'a' || key == 'A') is_w = true;
+if ( key == 's' || key == 'S') is_w = true;
+if ( key == 'd' || key == 'D') is_w = true;
+
+if (keyCode == UP) is_up = true;
+  if (keyCode == RIGHT) is_rigth = true;
+  if (keyCode == DOWN) is_left = true;
+  if (keyCode == LEFT) is_down = true;
+}
+
+Paleta:
+class Paleta {
+  PVector pos;
+  int ancho = 10;
+  int alto = 100;
+
+  Paleta(float p_x) {
+    pos = new PVector(p_x, height/2);
+  }
+  void mostrar() {
+    rectMode(CENTER);
+    rect(pos.x, pos.y, ancho, alto);
+  }
+
+  void moverUP() {
+    pos.y = pos.y - 5;
+  }
+  
+  void moverDown() {
+  }
+}
