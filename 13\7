@@ -1,0 +1,51 @@
+int totalPuntos = 60; // Aumentado a 60 puntos en movimiento
+PVector[] puntos;      
+PVector[] velocidades; 
+PVector centroPantalla;
+
+PVector centroCirculo;
+float radioCirculo = 200; 
+
+void setup() {
+  size(800, 600);
+  
+  centroPantalla = new PVector(width / 2, height / 2);
+  centroCirculo = new PVector(width / 2, height / 2); 
+  
+  puntos = new PVector[totalPuntos];
+  velocidades = new PVector[totalPuntos];
+  
+  for (int i = 0; i < totalPuntos; i++) {
+    puntos[i] = new PVector(random(width), random(height));
+    
+    velocidades[i] = new PVector(random(-2, 2), random(-2, 2));
+  }
+}
+
+void draw() {
+  background(30); 
+  
+
+  
+  for (int i = 0; i < totalPuntos; i++) {
+    puntos[i].add(velocidades[i]);
+    
+    if (puntos[i].x > width) {
+      puntos[i].x = 0;
+    } else if (puntos[i].x < 0) {
+      puntos[i].x = width;
+    }
+    
+    if (puntos[i].y > height) {
+      puntos[i].y = 0;
+    } else if (puntos[i].y < 0) {
+      puntos[i].y = height;
+    }
+    
+    float distancia = dist(puntos[i].x, puntos[i].y, centroCirculo.x, centroCirculo.y);
+    
+    if (distancia < radioCirculo) {
+
+      stroke(random(100, 255), random(150, 255), random(200, 255), 150); 
+      strokeWeight(1.5);
+      line(puntos[i].x, puntos[i].y, centroPantalla.x, centroPantalla.y);
