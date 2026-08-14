@@ -1,0 +1,98 @@
+Pelota p; 
+int sep = 30;
+Paleta j1, j2;
+
+void setup() {
+  size(800, 600);
+  p = new Pelota(width / 2, height / 2);
+  j1 = new Paleta(sep);
+  j2 = new Paleta(width - sep);
+}
+
+void draw() {
+  background(0); 
+
+  p.mover();
+  p.contener();
+  j1.mover(is_w, is_s);
+  j2.mover(is_up, is_down);
+
+  if (j1.chocaCon(p.pos, p.r)) {
+    p.rebotar(); 
+    p.separar(j1.poss);
+  }
+
+  if (j2.chocaCon(p.pos, p.r)) {
+    p.rebotar(); 
+    p.separar(j2.poss);
+  }
+
+  if (p.posx < 0 || p.posx > width) {
+    p = new Pelota(width / 2, height / 2);
+  }
+
+  p.mostrar();
+  j1.mostrar();
+  j2.mostrar();
+}
+
+class Paleta {
+  PVector poss;
+  float ancho = 15; 
+  float alto = 90;  
+  float vel = 6;    
+
+  Paleta(float x) {
+    poss = new PVector(x, height / 2);
+  }
+
+  void mover(boolean arriba, boolean abajo) {
+    if (arriba) {
+      poss.y -= vel;
+    }
+    if (abajo) {
+      poss.y += vel;
+    }
+
+    poss.y = constrain(poss.y, alto / 2, height - alto / 2);
+  }
+
+  boolean chocaCon(PVector posPelota, float radio) {
+    float cercaX = max(poss.x - ancho / 2, min(posPelota.x, poss.x + ancho / 2));
+    float cercaY = max(poss.y - alto / 2, min(posPelota.y, poss.y + alto / 2));
+
+    float distX = posPelota.x - cercaX;
+    float distY = posPelota.y - cercaY;
+
+    float distancia = sqrt((distX * distX) + (distY * distY));
+
+    return distancia < radio;
+  }
+
+  void mostrar() {
+    fill(255);
+    noStroke();
+    rectMode(CENTER);
+    rect(poss.x, poss.y, ancho, alto);
+  }
+}
+
+boolean is_w = false;
+boolean is_s = false;
+boolean is_up = false;
+boolean is_down = false;
+
+void keyPressed() {
+  if (key == 'w' || key == 'W') is_w = true;
+  if (key == 's' || key == 'S') is_s = true;
+  if (keyCode == UP) is_up = true;
+  if (keyCode == DOWN) is_down = true;
+}
+
+void keyReleased() {
+  if (key == 'w' || key == 'W') is_w = false;
+  if (key == 's' || key == 'S') is_s = false;
+  if (keyCode == UP) is_up = false;
+  if (keyCode == DOWN) is_down = false;
+}
+
