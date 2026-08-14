@@ -8,20 +8,26 @@ float rectY = 180;
 float rectW = 200;
 float rectH = 120;
 
+color colorFondo = color(220);
+
 void setup() {
   size(700, 500);
 }
 
 void draw() {
-  background(220);
+  background(colorFondo);
 
   circulo.add(velocidad);
 
-  if (circulo.x - radio < 0 || circulo.x + radio > width)
+  if (circulo.x - radio < 0 || circulo.x + radio > width) {
     velocidad.x *= -1;
+    colorFondo = color(random(255), random(255), random(255));
+  }
 
-  if (circulo.y - radio < 0 || circulo.y + radio > height)
+  if (circulo.y - radio < 0 || circulo.y + radio > height) {
     velocidad.y *= -1;
+    colorFondo = color(random(255), random(255), random(255));
+  }
 
   float puntoX = circulo.x;
   float puntoY = circulo.y;
@@ -40,10 +46,29 @@ void draw() {
 
   boolean colision = distancia < radio;
 
-  if (colision)
+  if (colision) {
     fill(255, 0, 0);
-  else
+
+    float difX = abs(circulo.x - puntoX);
+    float difY = abs(circulo.y - puntoY);
+
+    if (difX > difY) {
+      velocidad.x *= -1;
+    } else if (difY > difX) {
+      velocidad.y *= -1;
+    } else {
+      velocidad.x *= -1;
+      velocidad.y *= -1;
+    }
+
+    float traslape = radio - distancia;
+    if (distancia > 0) {
+      circulo.x += ((circulo.x - puntoX) / distancia) * traslape;
+      circulo.y += ((circulo.y - puntoY) / distancia) * traslape;
+    }
+  } else {
     fill(100, 150, 200);
+  }
 
   rect(rectX, rectY, rectW, rectH);
 
