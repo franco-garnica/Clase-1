@@ -1,0 +1,52 @@
+PVector circulo = new PVector(100, 100);
+PVector velocidad = new PVector(3, 2);
+
+float radio = 30;
+
+float rectX = 250;
+float rectY = 180;
+float rectW = 200;
+float rectH = 120;
+
+void setup() {
+  size(700, 500);
+}
+
+void draw() {
+  background(220);
+
+  circulo.add(velocidad);
+
+  if (circulo.x - radio < 0 || circulo.x + radio > width)
+    velocidad.x *= -1;
+
+  if (circulo.y - radio < 0 || circulo.y + radio > height)
+    velocidad.y *= -1;
+
+  float puntoX = circulo.x;
+  float puntoY = circulo.y;
+
+  if (circulo.x < rectX)
+    puntoX = rectX;
+  else if (circulo.x > rectX + rectW)
+    puntoX = rectX + rectW;
+
+  if (circulo.y < rectY)
+    puntoY = rectY;
+  else if (circulo.y > rectY + rectH)
+    puntoY = rectY + rectH;
+
+  float distancia = dist(circulo.x, circulo.y, puntoX, puntoY);
+
+  boolean colision = distancia < radio;
+
+  if (colision)
+    fill(255, 0, 0);
+  else
+    fill(100, 150, 200);
+
+  rect(rectX, rectY, rectW, rectH);
+
+  fill(200, 100, 100);
+  ellipse(circulo.x, circulo.y, radio * 2, radio * 2);
+}
