@@ -1,90 +1,116 @@
 ArrayList<cuadrado> tubos;
-  Pelota bird;
-float UltimoPar=0;
-PVector g =new PVector(0, 0.2);
+Pelota bird;
+float ultimoPar = 0;
+PVector g = new PVector(0, 0.2);
+boolean gameOver = false;
 
-void setup(){
-  size(800, 600);
-  tubos= new ArrayList<cuadrado>();
-  bird = new Pelota(100, height/2);
-}
+PImage imgPajaro; // 1. Declaramos la variable para la imagen
 
-void draw(){
-  background(135, 206, 235);
-  AgregarTubos();
-  bird.addFuerza(g);
-  bird.mover();
-  borrarTubos();
-  for(cuadrado t :tubos){
-    t.mover();
-    
-    t.mostrar();
-  }
-  bird.mostrar();
+void setup() {
+  size(600, 600);
   
+  // 2. Cargamos la imagen desde la carpeta 'data'
+  // IMPORTANTE: Asegurate de tener un archivo "pajaro.png" en la carpeta data de tu sketch
+  imgPajaro = loadImage("parajo.png"); 
+  
+  initGame();
 }
 
-void borrarTubos(){
-  for(int i= tubos.size() - 1; i>=0; i--){
-    cuadrado Aux = tubos.get(i);
-    if(Aux.pos.x < 0){
-      tubos.remove(i);}
+void initGame() {
+  tubos = new ArrayList<cuadrado>();
+  bird = new Pelota(100, height / 2);
+  ultimoPar = millis();
+  gameOver = false;
 }
+
+void draw() {
+  background(135, 206, 235);
+  
+  if (!gameOver) {
+    AgregarTubos();
+    
+    bird.addFuerza(g);
+    bird.mover();
+    
+    borrarTubos();
+    
+    for (cuadrado t : tubos) {
+      t.mover();
+      t.mostrar();
+      
+      if (chequearColision(bird, t)) {
+        gameOver = true;
+      }
+    }
+    
+    bird.mostrar();
+    
+    if (bird.pos.y >= height || bird.pos.y <= 0) {
+      gameOver = true;
+    }
+    
+  } else {
+    for (cuadrado t : tubos) t.mostrar();
+    bird.mostrar();
+    
+    fill(0, 150);
+    rect(0, 0, width, height);
+    
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(40);
+    text("GAME OVER", width / 2, height / 2 - 20);
+    textSize(20);
+    text("Presioná 'R' para reiniciar", width / 2, height / 2 + 30);
+  }
+}
+
+boolean chequearColision(Pelota p, cuadrado c) {
+  float cercanoX = constrain(p.pos.x, c.pos.x, c.pos.x + c.w);
+  float cercanoY = constrain(p.pos.y, c.pos.y, c.pos.y + c.h);
+  
+  float distanciaX = p.pos.x - cercanoX;
+  float distanciaY = p.pos.y - cercanoY;
+  float distanciaAlCuadrado = (distanciaX * distanciaX) + (distanciaY * distanciaY);
+  
+  return distanciaAlCuadrado < (p.r * p.r);
+}
+
+void borrarTubos() {
+  for (int i = tubos.size() - 1; i >= 0; i--) {
+    cuadrado Aux = tubos.get(i);
+    if (Aux.pos.x < -50) {
+      tubos.remove(i);
+    }
+  }
 }
 
 void AgregarTubos() {
   float tActual = millis();
-  float dt = tActual - UltimoPar;
-  if (dt > 2000) {
-    float anchoTubo = 60;
-    float altoTubo = random(100, 300);
-        tubos.add(new cuadrado(width, 0, 50, altoTubo));
-        tubos.add(new cuadrado(width, altoTubo + anchoTubo, height - (altoTubo + anchoTubo)));
-
+  float dt = tActual - ultimoPar;
+  
+  if (dt > 2500) {
+    float gap = 160; 
+    float altoSuperior = random(100, height - 100 - gap);
     
-    UltimoPar = tActual;
+    tubos.add(new cuadrado(width, 0, 50, altoSuperior));
+    tubos.add(new cuadrado(width, altoSuperior + gap, 50, height - (altoSuperior + gap)));
+    
+    ultimoPar = tActual;
   }
 }
-void keyPressed(){
-  if (key == ' '){
+
+void keyPressed() {
+  if (key == ' ' && !gameOver) {
     bird.saltar();
   }
-}
-
-CLASES:
-class Pelota {
-  PVector pos;
-  PVector vel;
-  float r = 20;
-
-  Pelota(float x, float y) {
-    pos = new PVector(x, y);
-    vel = new PVector(0, 0);
-  }
-
-  void addFuerza(PVector fuerza) {
-    vel.add(fuerza);
-  }
-
-  void saltar() {
-    vel.y = -6;
-  }
-
-  void mover() {
-    pos.add(vel);
-    vel.limit(8);
-   
- 
-    if (pos.y > height) pos.y = height;
-    if (pos.y < 0) pos.y = 0;
-  }
-
-  void mostrar() {
-    fill(255, 255, 0);
-    ellipse(pos.x, pos.y, r * 2, r * 2);
+  if ((key == 'r' || key == 'R') && gameOver) {
+    initGame();
   }
 }
 
+
+Classes:
 class cuadrado {
   PVector pos;
   float w, h;
@@ -96,19 +122,44 @@ class cuadrado {
     h = alto;
   }
 
-  cuadrado(float x, float y, float alto) {
-    pos = new PVector(x, y);
-    w = 50; 
-    h = alto;
-  }
-
   void mover() {
     pos.x += velocidadX;
   }
 
   void mostrar() {
     fill(0, 200, 0);
+    stroke(0);
     rect(pos.x, pos.y, w, h);
   }
 }
+class Pelota {
+  PVector pos;
+  PVector vel;
+  float r = 14; // El radio sigue controlando la zona de colisión física
 
+  Pelota(float x, float y) {
+    pos = new PVector(x, y);
+    vel = new PVector(0, 0);
+  }
+
+  void addFuerza(PVector fuerza) {
+    vel.add(fuerza);
+  }
+
+  void saltar() {
+    vel.y = -5.5; 
+  }
+
+  void mover() {
+    pos.add(vel);
+    vel.limit(8); 
+  }
+
+  void mostrar() {
+    // 3. Modificamos el dibujo para usar la imagen en vez del círculo amarillo
+    imageMode(CENTER); // Hace que los ejes (X, Y) de la imagen correspondan a su centro
+    
+    // Dibujamos la imagen en la posición del pájaro, escalada a su tamaño de colisión (diámetro = r * 2)
+    image(imgPajaro, pos.x, pos.y, r * 2, r * 2); 
+  }
+}
