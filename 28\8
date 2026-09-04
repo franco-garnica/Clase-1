@@ -11,7 +11,7 @@ void setup() {
   
   // 2. Cargamos la imagen desde la carpeta 'data'
   // IMPORTANTE: Asegurate de tener un archivo "pajaro.png" en la carpeta data de tu sketch
-  imgPajaro = loadImage("parajo.png"); 
+  imgPajaro = loadImage("pajaro.png"); 
   
   initGame();
 }
