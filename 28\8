@@ -1,85 +1,116 @@
-ArrayList<cuadrado> tubos;
+ArrayList<DuplaDeTubos> tubos;
 Pelota bird;
+
 float ultimoPar = 0;
 PVector g = new PVector(0, 0.2);
-boolean gameOver = false;
 
-PImage imgPajaro; // 1. Declaramos la variable para la imagen
+PImage imgPajaro;
+
+int estadoDelJuego;
+
+final int INICIO = 0;
+final int JUGANDO = 1;
+final int GAME_OVER = 2;
 
 void setup() {
   size(600, 600);
-  
-  // 2. Cargamos la imagen desde la carpeta 'data'
-  // IMPORTANTE: Asegurate de tener un archivo "pajaro.png" en la carpeta data de tu sketch
-  imgPajaro = loadImage("pajaro.png"); 
-  
-  initGame();
-}
 
-void initGame() {
-  tubos = new ArrayList<cuadrado>();
-  bird = new Pelota(100, height / 2);
-  ultimoPar = millis();
-  gameOver = false;
+  imgPajaro = loadImage("pajaro.png");
+
+  estadoDelJuego = INICIO;
 }
 
 void draw() {
   background(135, 206, 235);
-  
-  if (!gameOver) {
-    AgregarTubos();
-    
-    bird.addFuerza(g);
-    bird.mover();
-    
-    borrarTubos();
-    
-    for (cuadrado t : tubos) {
-      t.mover();
-      t.mostrar();
-      
-      if (chequearColision(bird, t)) {
-        gameOver = true;
-      }
-    }
-    
-    bird.mostrar();
-    
-    if (bird.pos.y >= height || bird.pos.y <= 0) {
-      gameOver = true;
-    }
-    
-  } else {
-    for (cuadrado t : tubos) t.mostrar();
-    bird.mostrar();
-    
-    fill(0, 150);
-    rect(0, 0, width, height);
-    
-    fill(255);
-    textAlign(CENTER, CENTER);
-    textSize(40);
-    text("GAME OVER", width / 2, height / 2 - 20);
-    textSize(20);
-    text("Presioná 'R' para reiniciar", width / 2, height / 2 + 30);
+
+  if (estadoDelJuego == INICIO) {
+    pantallaInicio();
   }
+
+  if (estadoDelJuego == JUGANDO) {
+    jugar();
+  }
+
+  if (estadoDelJuego == GAME_OVER) {
+    pantallaGameOver();
+  }
+}
+
+void pantallaInicio() {
+  fill(255);
+  textAlign(CENTER, CENTER);
+
+  textSize(55);
+  text("FLAPPY BIRD", width / 2, 200);
+
+  textSize(25);
+  text("Presioná ESPACIO para comenzar", width / 2, 350);
+}
+
+void jugar() {
+  AgregarTubos();
+
+  bird.addFuerza(g);
+  bird.mover();
+
+  borrarTubos();
+
+  for (DuplaDeTubos t : tubos) {
+    t.mover();
+    t.mostrar();
+
+    if (chequearColision(bird, t.superior) ||
+        chequearColision(bird, t.inferior)) {
+      estadoDelJuego = GAME_OVER;
+    }
+  }
+
+  bird.mostrar();
+
+  if (bird.pos.y >= height || bird.pos.y <= 0) {
+    estadoDelJuego = GAME_OVER;
+  }
+}
+
+void pantallaGameOver() {
+  for (DuplaDeTubos t : tubos) {
+    t.mostrar();
+  }
+
+  bird.mostrar();
+
+  fill(0, 150);
+  rect(0, 0, width, height);
+
+  fill(255);
+  textAlign(CENTER, CENTER);
+
+  textSize(50);
+  text("GAME OVER", width / 2, 230);
+
+  textSize(22);
+  text("Presioná R para volver al inicio", width / 2, 330);
 }
 
 boolean chequearColision(Pelota p, cuadrado c) {
   float cercanoX = constrain(p.pos.x, c.pos.x, c.pos.x + c.w);
   float cercanoY = constrain(p.pos.y, c.pos.y, c.pos.y + c.h);
-  
+
   float distanciaX = p.pos.x - cercanoX;
   float distanciaY = p.pos.y - cercanoY;
-  float distanciaAlCuadrado = (distanciaX * distanciaX) + (distanciaY * distanciaY);
-  
+
+  float distanciaAlCuadrado =
+    (distanciaX * distanciaX) +
+    (distanciaY * distanciaY);
+
   return distanciaAlCuadrado < (p.r * p.r);
 }
 
 void borrarTubos() {
   for (int i = tubos.size() - 1; i >= 0; i--) {
-    cuadrado Aux = tubos.get(i);
-    if (Aux.pos.x < -50) {
+    DuplaDeTubos aux = tubos.get(i);
+
+    if (aux.superior.pos.x < -50) {
       tubos.remove(i);
     }
   }
@@ -88,29 +119,45 @@ void borrarTubos() {
 void AgregarTubos() {
   float tActual = millis();
   float dt = tActual - ultimoPar;
-  
+
   if (dt > 2500) {
-    float gap = 160; 
-    float altoSuperior = random(100, height - 100 - gap);
-    
-    tubos.add(new cuadrado(width, 0, 50, altoSuperior));
-    tubos.add(new cuadrado(width, altoSuperior + gap, 50, height - (altoSuperior + gap)));
-    
+    float espacio = 160;
+    float altoSuperior = random(100, height - 100 - espacio);
+
+    tubos.add(new DuplaDeTubos(
+      width,
+      altoSuperior,
+      espacio
+    ));
+
     ultimoPar = tActual;
   }
 }
 
+void iniciarJuego() {
+  tubos = new ArrayList<DuplaDeTubos>();
+  bird = new Pelota(100, height / 2);
+  ultimoPar = millis();
+  estadoDelJuego = JUGANDO;
+}
+
 void keyPressed() {
-  if (key == ' ' && !gameOver) {
+
+  if (estadoDelJuego == INICIO && key == ' ') {
+    iniciarJuego();
+  }
+
+  else if (estadoDelJuego == JUGANDO && key == ' ') {
     bird.saltar();
   }
-  if ((key == 'r' || key == 'R') && gameOver) {
-    initGame();
+
+  else if (estadoDelJuego == GAME_OVER &&
+           (key == 'r' || key == 'R')) {
+    estadoDelJuego = INICIO;
   }
 }
 
-
-Classes:
+CLASES:
 class cuadrado {
   PVector pos;
   float w, h;
@@ -132,10 +179,49 @@ class cuadrado {
     rect(pos.x, pos.y, w, h);
   }
 }
+
+class DuplaDeTubos {
+  cuadrado superior;
+  cuadrado inferior;
+  float espacio;
+
+  DuplaDeTubos(float x, float altoSuperior, float espacio) {
+    this.espacio = espacio;
+
+    superior = new cuadrado(
+      x,
+      0,
+      50,
+      altoSuperior
+    );
+
+    inferior = new cuadrado(
+      x,
+      altoSuperior + espacio,
+      50,
+      height - (altoSuperior + espacio)
+    );
+  }
+
+  void mover() {
+    superior.mover();
+    inferior.mover();
+  }
+
+  void mostrar() {
+    superior.mostrar();
+    inferior.mostrar();
+  }
+
+  float obtenerEspacio() {
+    return espacio;
+  }
+}
+
 class Pelota {
   PVector pos;
   PVector vel;
-  float r = 14; // El radio sigue controlando la zona de colisión física
+  float r = 14;
 
   Pelota(float x, float y) {
     pos = new PVector(x, y);
@@ -147,19 +233,17 @@ class Pelota {
   }
 
   void saltar() {
-    vel.y = -5.5; 
+    vel.y = -5.5;
   }
 
   void mover() {
     pos.add(vel);
-    vel.limit(8); 
+    vel.limit(8);
   }
 
   void mostrar() {
-    // 3. Modificamos el dibujo para usar la imagen en vez del círculo amarillo
-    imageMode(CENTER); // Hace que los ejes (X, Y) de la imagen correspondan a su centro
-    
-    // Dibujamos la imagen en la posición del pájaro, escalada a su tamaño de colisión (diámetro = r * 2)
-    image(imgPajaro, pos.x, pos.y, r * 2, r * 2); 
+    imageMode(CENTER);
+    image(imgPajaro, pos.x, pos.y, r * 2, r * 2);
   }
 }
+
