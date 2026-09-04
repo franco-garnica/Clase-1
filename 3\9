@@ -1,0 +1,424 @@
+// --- VARIABLES GLOBALES DEL SISTEMA ---
+int estadoGeneral;
+final int MENU_PRINCIPAL = -1;
+final int FLAPPY_BIRD = 1;
+final int PONG = 2;
+
+// Variable compartida para subclases/modos
+int estadoJuegoActual = 0; // 0: Inicio local, 1: Jugando, 2: Game Over
+final int ST_INICIO = 0;
+final int ST_JUGANDO = 1;
+final int ST_GAMEOVER = 2;
+
+// --- VARIABLES FLAPPY BIRD ---
+ArrayList<DuplaDeTubos> tubos;
+PelotaFlappy bird;
+float ultimoPar = 0;
+PVector g = new PVector(0, 0.25);
+PImage imgPajaro;
+
+// --- VARIABLES PONG ---
+PelotaPong pelotaPong;
+Paleta j1, j2;
+int sep = 30;
+boolean is_w, is_s, is_up, is_down;
+
+// --- CONFIGURACIÓN E INICIALIZACIÓN ---
+void setup() {
+  size(800, 600);
+  estadoGeneral = MENU_PRINCIPAL;
+  
+  // Se carga la imagen intentando prevenir fallos si falta la textura
+  imgPajaro = loadImage("pajaro.png");
+}
+
+void draw() {
+  background(30);
+
+  switch(estadoGeneral) {
+    case MENU_PRINCIPAL:
+      dibujarMenuPrincipal();
+      break;
+    case FLAPPY_BIRD:
+      ejecutarFlappyBird();
+      break;
+    case PONG:
+      ejecutarPong();
+      break;
+  }
+}
+
+// --- MENÚ PRINCIPAL INTERACTIVO ---
+void dibujarMenuPrincipal() {
+  background(20, 25, 45);
+  textAlign(CENTER, CENTER);
+  
+  // Título Principal
+  fill(255);
+  textSize(48);
+  text("SELECCIONÁ UN JUEGO", width / 2, 120);
+
+  // Botón 1: Flappy Bird
+  boolean hoverFlappy = mouseX > 150 && mouseX < 350 && mouseY > 250 && mouseY < 350;
+  if (hoverFlappy) fill(70, 180, 90); else fill(50, 120, 60);
+  rectMode(CORNER);
+  rect(150, 250, 200, 100, 15);
+  fill(255);
+  textSize(22);
+  text("1. Flappy Bird", 250, 285);
+  textSize(14);
+  text("[Presioná '1']", 250, 315);
+
+  // Botón 2: Pong
+  boolean hoverPong = mouseX > 450 && mouseX < 650 && mouseY > 250 && mouseY < 350;
+  if (hoverPong) fill(70, 130, 220); else fill(40, 80, 160);
+  rect(450, 250, 200, 100, 15);
+  fill(255);
+  textSize(22);
+  text("2. Pong", 550, 285);
+  textSize(14);
+  text("[Presioná '2']", 550, 315);
+  
+  fill(180);
+  textSize(16);
+  text("Hacé clic en una opción o presioná el número correspondiente.", width / 2, 480);
+}
+
+// --- MÓDULO FLAPPY BIRD ---
+void iniciarFlappy() {
+  tubos = new ArrayList<DuplaDeTubos>();
+  bird = new PelotaFlappy(150, height / 2);
+  ultimoPar = millis();
+  estadoJuegoActual = ST_JUGANDO;
+}
+
+void ejecutarFlappyBird() {
+  background(135, 206, 235);
+
+  if (estadoJuegoActual == ST_INICIO) {
+    fill(0, 150);
+    rect(0, 0, width, height);
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(45);
+    text("FLAPPY BIRD", width / 2, 200);
+    textSize(22);
+    text("Presioná ESPACIO para comenzar\nPresioná M para volver al Menú", width / 2, 350);
+  } else if (estadoJuegoActual == ST_JUGANDO) {
+    AgregarTubos();
+
+    bird.addFuerza(g);
+    bird.mover();
+    borrarTubos();
+
+    for (DuplaDeTubos t : tubos) {
+      t.mover();
+      t.mostrar();
+
+      if (chequearColision(bird, t.superior) || chequearColision(bird, t.inferior)) {
+        estadoJuegoActual = ST_GAMEOVER;
+      }
+    }
+
+    bird.mostrar();
+
+    if (bird.pos.y >= height || bird.pos.y <= 0) {
+      estadoJuegoActual = ST_GAMEOVER;
+    }
+  } else if (estadoJuegoActual == ST_GAMEOVER) {
+    for (DuplaDeTubos t : tubos) t.mostrar();
+    bird.mostrar();
+
+    fill(0, 180);
+    rect(0, 0, width, height);
+
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(50);
+    text("GAME OVER", width / 2, 220);
+    textSize(20);
+    text("Presioná R para reiniciar\nPresioná M para volver al Menú", width / 2, 340);
+  }
+}
+
+// --- MÓDULO PONG ---
+void iniciarPong() {
+  pelotaPong = new PelotaPong(width / 2, height / 2);
+  j1 = new Paleta(sep);
+  j2 = new Paleta(width - sep);
+  estadoJuegoActual = ST_JUGANDO;
+}
+
+void ejecutarPong() {
+  background(10);
+
+  if (estadoJuegoActual == ST_INICIO) {
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(45);
+    text("PONG", width / 2, 200);
+    textSize(20);
+    text("Jugador 1: Teclas W / S\nJugador 2: Flechas ARRIBA / ABAJO\n\nPresioná ESPACIO para comenzar\nPresioná M para volver al Menú", width / 2, 360);
+  } else if (estadoJuegoActual == ST_JUGANDO) {
+    pelotaPong.mover();
+    pelotaPong.contener();
+    j1.mover(is_w, is_s);
+    j2.mover(is_up, is_down);
+
+    if (j1.chocaCon(pelotaPong.pos, pelotaPong.r)) {
+      pelotaPong.rebotar();
+      pelotaPong.separar(j1.poss.x + j1.ancho / 2 + pelotaPong.r);
+    }
+
+    if (j2.chocaCon(pelotaPong.pos, pelotaPong.r)) {
+      pelotaPong.rebotar();
+      pelotaPong.separar(j2.poss.x - j2.ancho / 2 - pelotaPong.r);
+    }
+
+    if (pelotaPong.pos.x < 0 || pelotaPong.pos.x > width) {
+      pelotaPong = new PelotaPong(width / 2, height / 2);
+    }
+
+    pelotaPong.mostrar();
+    j1.mostrar();
+    j2.mostrar();
+    
+    fill(255, 150);
+    textSize(14);
+    text("Presioná M para volver al Menú", width / 2, 20);
+  }
+}
+
+// --- FÍSICA Y AUXILIARES ---
+boolean chequearColision(PelotaFlappy p, cuadrado c) {
+  float cercanoX = constrain(p.pos.x, c.pos.x, c.pos.x + c.w);
+  float cercanoY = constrain(p.pos.y, c.pos.y, c.pos.y + c.h);
+
+  float distanciaX = p.pos.x - cercanoX;
+  float distanciaY = p.pos.y - cercanoY;
+
+  return (distanciaX * distanciaX + distanciaY * distanciaY) < (p.r * p.r);
+}
+
+void borrarTubos() {
+  for (int i = tubos.size() - 1; i >= 0; i--) {
+    if (tubos.get(i).superior.pos.x < -60) {
+      tubos.remove(i);
+    }
+  }
+}
+
+void AgregarTubos() {
+  float tActual = millis();
+  if (tActual - ultimoPar > 2200) {
+    float espacio = 170;
+    float altoSuperior = random(80, height - 80 - espacio);
+    tubos.add(new DuplaDeTubos(width, altoSuperior, espacio));
+    ultimoPar = tActual;
+  }
+}
+
+// --- EVENTOS DE TECLADO Y MOUSE ---
+void mousePressed() {
+  if (estadoGeneral == MENU_PRINCIPAL) {
+    if (mouseX > 150 && mouseX < 350 && mouseY > 250 && mouseY < 350) {
+      estadoGeneral = FLAPPY_BIRD;
+      estadoJuegoActual = ST_INICIO;
+    } else if (mouseX > 450 && mouseX < 650 && mouseY > 250 && mouseY < 350) {
+      estadoGeneral = PONG;
+      estadoJuegoActual = ST_INICIO;
+    }
+  }
+}
+
+void keyPressed() {
+  if (key == 'm' || key == 'M') {
+    estadoGeneral = MENU_PRINCIPAL;
+    return;
+  }
+
+  if (estadoGeneral == MENU_PRINCIPAL) {
+    if (key == '1') {
+      estadoGeneral = FLAPPY_BIRD;
+      estadoJuegoActual = ST_INICIO;
+    } else if (key == '2') {
+      estadoGeneral = PONG;
+      estadoJuegoActual = ST_INICIO;
+    }
+  } else if (estadoGeneral == FLAPPY_BIRD) {
+    if (estadoJuegoActual == ST_INICIO && key == ' ') {
+      iniciarFlappy();
+    } else if (estadoJuegoActual == ST_JUGANDO && key == ' ') {
+      bird.saltar();
+    } else if (estadoJuegoActual == ST_GAMEOVER && (key == 'r' || key == 'R')) {
+      iniciarFlappy();
+    }
+  } else if (estadoGeneral == PONG) {
+    if (estadoJuegoActual == ST_INICIO && key == ' ') {
+      iniciarPong();
+    }
+    if (key == 'w' || key == 'W') is_w = true;
+    if (key == 's' || key == 'S') is_s = true;
+    if (keyCode == UP) is_up = true;
+    if (keyCode == DOWN) is_down = true;
+  }
+}
+
+void keyReleased() {
+  if (estadoGeneral == PONG) {
+    if (key == 'w' || key == 'W') is_w = false;
+    if (key == 's' || key == 'S') is_s = false;
+    if (keyCode == UP) is_up = false;
+    if (keyCode == DOWN) is_down = false;
+  }
+}
+
+// --- CLASES DEL JUEGO ---
+
+class cuadrado {
+  PVector pos;
+  float w, h;
+  float velocidadX = -3.5;
+
+  cuadrado(float x, float y, float ancho, float alto) {
+    pos = new PVector(x, y);
+    w = ancho;
+    h = alto;
+  }
+
+  void mover() {
+    pos.x += velocidadX;
+  }
+
+  void mostrar() {
+    fill(40, 180, 70);
+    stroke(0);
+    strokeWeight(2);
+    rectMode(CORNER);
+    rect(pos.x, pos.y, w, h);
+  }
+}
+
+class DuplaDeTubos {
+  cuadrado superior;
+  cuadrado inferior;
+
+  DuplaDeTubos(float x, float altoSuperior, float espacio) {
+    superior = new cuadrado(x, 0, 60, altoSuperior);
+    inferior = new cuadrado(x, altoSuperior + espacio, 60, height - (altoSuperior + espacio));
+  }
+
+  void mover() {
+    superior.mover();
+    inferior.mover();
+  }
+
+  void mostrar() {
+    superior.mostrar();
+    inferior.mostrar();
+  }
+}
+
+class PelotaFlappy {
+  PVector pos, vel;
+  float r = 16;
+
+  PelotaFlappy(float x, float y) {
+    pos = new PVector(x, y);
+    vel = new PVector(0, 0);
+  }
+
+  void addFuerza(PVector fuerza) {
+    vel.add(fuerza);
+  }
+
+  void saltar() {
+    vel.y = -6.5;
+  }
+
+  void mover() {
+    pos.add(vel);
+    vel.limit(9);
+  }
+
+  void mostrar() {
+    if (imgPajaro != null && imgPajaro.width > 0) {
+      imageMode(CENTER);
+      image(imgPajaro, pos.x, pos.y, r * 2, r * 2);
+    } else {
+      fill(240, 200, 50);
+      noStroke();
+      ellipse(pos.x, pos.y, r * 2, r * 2);
+    }
+  }
+}
+
+class PelotaPong {
+  PVector pos, vel;
+  float r = 10;
+
+  PelotaPong(float x, float y) {
+    pos = new PVector(x, y);
+    float dirX = random(1) > 0.5 ? 5 : -5;
+    float dirY = random(-3, 3);
+    vel = new PVector(dirX, dirY);
+  }
+
+  void mover() {
+    pos.add(vel);
+  }
+
+  void contener() {
+    if (pos.y - r < 0 || pos.y + r > height) {
+      vel.y *= -1;
+    }
+  }
+
+  void rebotar() {
+    vel.x *= -1.05; // Aumenta levemente la velocidad al rebotar
+  }
+
+  void separar(float xFix) {
+    pos.x = xFix;
+  }
+
+  void mostrar() {
+    fill(255);
+    noStroke();
+    ellipse(pos.x, pos.y, r * 2, r * 2);
+  }
+}
+
+class Paleta {
+  PVector poss;
+  float ancho = 15;
+  float alto = 90;
+  float vel = 7;
+
+  Paleta(float x) {
+    poss = new PVector(x, height / 2);
+  }
+
+  void mover(boolean arriba, boolean abajo) {
+    if (arriba) poss.y -= vel;
+    if (abajo) poss.y += vel;
+    poss.y = constrain(poss.y, alto / 2, height - alto / 2);
+  }
+
+  boolean chocaCon(PVector posPelota, float radio) {
+    float cercaX = max(poss.x - ancho / 2, min(posPelota.x, poss.x + ancho / 2));
+    float cercaY = max(poss.y - alto / 2, min(posPelota.y, poss.y + alto / 2));
+
+    float distX = posPelota.x - cercaX;
+    float distY = posPelota.y - cercaY;
+
+    return (distX * distX + distY * distY) < (radio * radio);
+  }
+
+  void mostrar() {
+    fill(255);
+    noStroke();
+    rectMode(CENTER);
+    rect(poss.x, poss.y, ancho, alto);
+  }
+}                          
